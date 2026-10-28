@@ -15,7 +15,7 @@ test('the band shows what is used of context, 7d and 5h', async ($, on) => {
       sevenDay: { percentUsed: 32, resetsAt: '2026-10-31T16:00:00Z' },
     },
     now: at,
-    worktree: 'swift-otter',
+    place: { kind: 'worktree', name: 'swift-otter' },
   }
   on('state.get', (_, e) => ({ value: { value: values[e.key], version: 1 } }))
 
@@ -43,4 +43,22 @@ test('the band stays out of the way with no figures yet', async ($, on) => {
   const ui = await $.ui.mount({ ...BAND, surface: 'desktop' })
   expect((await ui.find({ type: 'Text' }))?.text).toBe('engine')
   await ui.unmount()
+})
+
+test('the branch gets an icon: a drawing on desktop, a glyph on the terminal', async ($, on) => {
+  const values: Record<string, unknown> = {
+    snapshot: { context: 10 },
+    now: Date.parse('2026-10-28T12:00:00Z'),
+    place: { kind: 'branch', name: 'master' },
+  }
+  on('state.get', (_, e) => ({ value: { value: values[e.key], version: 1 } }))
+
+  const desktop = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  expect(await desktop.find({ type: 'Svg' })).toBeDefined()
+  expect(await desktop.find({ type: 'Text', text: /^master$/ })).toBeDefined()
+  await desktop.unmount()
+
+  const terminal = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await terminal.find({ type: 'Text', text: /⎇/ })).toBeDefined()
+  await terminal.unmount()
 })
