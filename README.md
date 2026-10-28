@@ -3,9 +3,10 @@
 A Claude Code mod that shows a one-line usage band above the prompt:
 
 ```
-USAGE   CTX ●······· 12%   5H ●●······ 25% · 2h 10m   7D ●●●····· 32% · 3d 4h   my-worktree
+USAGE   🤖 2   CTX ●······· 12%   5H ●●······ 25% · 2h 10m   7D ●●●····· 32% · 3d 4h   my-worktree
 ```
 
+- **agents** - how many subagents are running; click the count to open an Agents pane, then click an agent to see its transcript
 - **CTX** - how full the context window is
 - **5H** - the 5-hour rate limit used, and when it resets
 - **7D** - the weekly rate limit used, and when it resets

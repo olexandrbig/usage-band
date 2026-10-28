@@ -83,3 +83,47 @@ test('a narrow band keeps the numbers and drops the dots', async ($, on) => {
   expect(all).toMatch(/66% · 2d 3h/)
   await ui.unmount()
 })
+
+const AGENTS = [
+  { id: 'a1', description: 'Code review of PR', type: 'code-reviewer', status: 'running' },
+  { id: 'a2', description: 'QA verification', type: 'qa', status: 'running' },
+  { id: 'a3', description: 'Old search', type: 'Explore', status: 'completed' },
+]
+
+test('the band counts running agents before CTX and a click opens the agents pane', async ($, on) => {
+  const values: Record<string, unknown> = {
+    snapshot: { context: 18 },
+    now: Date.parse('2026-10-28T12:00:00Z'),
+    agents: AGENTS,
+  }
+  on('state.get', (_, e) => ({ value: { value: values[e.key], version: 1 } }))
+  const opened: string[] = []
+  on('ui.open', (_, e) => (opened.push(e.id), { value: { isPlaced: true } }))
+
+  const ui = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  const all = (await ui.findAll({ type: 'Text' })).map(t => t.text).join(' | ')
+  expect(all).toMatch(/USAGE \| 2 \|.*CTX/)
+  await ui.press({ key: 'agents' })
+  expect(opened).toEqual(['usage-band-agents'])
+  await ui.unmount()
+})
+
+test('the agents pane lists each agent and a click shows its transcript', async ($, on) => {
+  on('state.get', (_, e) => ({ value: { value: e.key === 'agents' ? AGENTS : null, version: 1 } }))
+  const viewed: unknown[] = []
+  on('ui.view', (_, e) => (viewed.push(e), { value: {} }))
+
+  const ui = await $.ui.mount({
+    plugin: 'usage-band',
+    component: 'Pane',
+    requestId: 'usage-band-agents',
+    surface: 'desktop',
+    props: { title: 'Agents', isFocused: false, bodyColumns: 40, placement: 'dock', scroll: { offset: 0, bodyRows: 20 }, view: {} },
+  })
+  const all = (await ui.findAll({ type: 'Text' })).map(t => t.text).join(' | ')
+  expect(all).toMatch(/Code review of PR/)
+  expect(all).toMatch(/Old search/)
+  await ui.press({ key: 'a2' })
+  expect(viewed).toEqual([{ agentId: 'a2' }])
+  await ui.unmount()
+})
