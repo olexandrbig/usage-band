@@ -11,7 +11,7 @@ USAGE   CTX ●······· 12%   5H ●●······ 25% · 2h 10m   7D ●
 - **7D** - the weekly rate limit used, and when it resets
 - **worktree or branch** - the git worktree name, or the current branch outside a worktree
 
-Meters turn green, amber (30%+) and orange (75%+) as they fill. The 5H and 7D meters appear only on a Claude subscription. The band reads these figures from Claude Code itself and sends nothing anywhere.
+Meters turn green, amber (30%+) and orange (75%+) as they fill. When the window is too narrow for the full row, the dots are hidden and only the numbers stay. The 5H and 7D meters appear only on a Claude subscription. The band reads these figures from Claude Code itself and sends nothing anywhere.
 
 Works in the terminal and in the Claude desktop app's Code tab.
 

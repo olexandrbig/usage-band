@@ -62,3 +62,24 @@ test('the branch gets an icon: a drawing on desktop, a glyph on the terminal', a
   expect(await terminal.find({ type: 'Text', text: /⎇/ })).toBeDefined()
   await terminal.unmount()
 })
+
+test('a narrow band keeps the numbers and drops the dots', async ($, on) => {
+  const values: Record<string, unknown> = {
+    snapshot: {
+      context: 18,
+      fiveHour: { percentUsed: 12, resetsAt: '2026-10-28T13:20:00Z' },
+      sevenDay: { percentUsed: 66, resetsAt: '2026-10-30T15:00:00Z' },
+    },
+    now: Date.parse('2026-10-28T12:00:00Z'),
+    place: { kind: 'branch', name: 'master' },
+  }
+  on('state.get', (_, e) => ({ value: { value: values[e.key], version: 1 } }))
+
+  const ui = await $.ui.mount({ ...BAND, props: { ...BAND.props, bodyColumns: 60 }, surface: 'desktop' })
+  const all = (await ui.findAll({ type: 'Text' })).map(t => t.text).join(' | ')
+  expect(all).not.toMatch(/●/)
+  expect(all).toMatch(/18%/)
+  expect(all).toMatch(/12% · 1h 20m/)
+  expect(all).toMatch(/66% · 2d 3h/)
+  await ui.unmount()
+})

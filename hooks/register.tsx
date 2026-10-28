@@ -107,34 +107,45 @@ export const register: Register = on => {
     const ui = $.ui.resolve(e)
     const { Box, Text } = ui
 
-    const meter = (name: string, used: number, suffix: string) => {
+    const specs: { name: string; used: number; suffix: string }[] = []
+
+    if (snap.context !== undefined) {
+      specs.push({ name: 'CTX', used: snap.context, suffix: '' })
+    }
+
+    if (snap.fiveHour) {
+      specs.push({ name: '5H', used: snap.fiveHour.percentUsed, suffix: countdown(snap.fiveHour.resetsAt, at) })
+    }
+
+    if (snap.sevenDay) {
+      specs.push({ name: '7D', used: snap.sevenDay.percentUsed, suffix: countdown(snap.sevenDay.resetsAt, at) })
+    }
+
+    // Drop the dot meters when the whole row with them would not fit on one line.
+    const meterText = (s: (typeof specs)[number], dots: number) =>
+      `${s.name} ${dots ? '●'.repeat(dots) + ' ' : ''}${Math.round(s.used)}%${s.suffix ? ` · ${s.suffix}` : ''}`
+    const fullWidth =
+      'USAGE'.length +
+      specs.reduce((sum, s) => sum + 2 + meterText(s, DOTS).length, 0) +
+      (where ? 5 + where.name.length : 0)
+    const dots = fullWidth <= e.props.bodyColumns ? DOTS : 0
+
+    const meter = ({ name, used, suffix }: (typeof specs)[number]) => {
       const filled = Math.min(DOTS, Math.round((used / 100) * DOTS))
       const color = colorFor(used)
 
       return (
         <Text key={name} size="footnote">
           <Text color={LABEL} weight="semibold">{name} </Text>
-          <Text color={color}>{'●'.repeat(filled)}</Text>
-          <Text color={FAINT}>{'·'.repeat(DOTS - filled)}</Text>
-          <Text color={color} weight="semibold" tabular> {Math.round(used)}%</Text>
+          {dots ? <Text color={color}>{'●'.repeat(filled)}</Text> : null}
+          {dots ? <Text color={FAINT}>{'·'.repeat(DOTS - filled)} </Text> : null}
+          <Text color={color} weight="semibold" tabular>{Math.round(used)}%</Text>
           {suffix ? <Text color={LABEL} tabular> · {suffix}</Text> : null}
         </Text>
       )
     }
 
-    const items = []
-
-    if (snap.context !== undefined) {
-      items.push(meter('CTX', snap.context, ''))
-    }
-
-    if (snap.fiveHour) {
-      items.push(meter('5H', snap.fiveHour.percentUsed, countdown(snap.fiveHour.resetsAt, at)))
-    }
-
-    if (snap.sevenDay) {
-      items.push(meter('7D', snap.sevenDay.percentUsed, countdown(snap.sevenDay.resetsAt, at)))
-    }
+    const items = specs.map(meter)
 
     return (
       <Box flexDirection="row" flexWrap="nowrap" columnGap={2}>
