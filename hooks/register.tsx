@@ -36,12 +36,26 @@ const countdown = (resetsAt: string | undefined, at: number) => {
   return days > 0 ? `${days}d ${hours}h` : `${hours}h ${minutes % 60}m`
 }
 
-// The worktree's folder name when the session runs in a linked git worktree, else null.
+const currentBranch = async ($: EngineInterface, cwd: string) => {
+  try {
+    const { exitCode, stdout } = await $.process.run(['git', 'branch', '--show-current'], { cwd, timeoutMs: 5000 })
+
+    return exitCode === 0 && stdout.trim() ? stdout.trim() : null
+  } catch {
+    return null
+  }
+}
+
+// The worktree's folder name in a linked git worktree, else the current branch, else null.
 const worktreeName = async ($: EngineInterface) => {
   const [root, repo] = await Promise.all([$.session.root(), $.session.repo()])
 
-  if (!repo || root.replace(/\/+$/, '') === repo.root.replace(/\/+$/, '')) {
+  if (!repo) {
     return null
+  }
+
+  if (root.replace(/\/+$/, '') === repo.root.replace(/\/+$/, '')) {
+    return currentBranch($, root)
   }
 
   return root.split('/').filter(Boolean).pop() ?? null
