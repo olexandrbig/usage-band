@@ -15,6 +15,7 @@ test('the band shows what is used of context, 7d and 5h', async ($, on) => {
       sevenDay: { percentUsed: 32, resetsAt: '2026-10-31T16:00:00Z' },
     },
     now: at,
+    worktree: 'swift-otter',
   }
   on('state.get', (_, e) => ({ value: { value: values[e.key], version: 1 } }))
 
@@ -27,6 +28,7 @@ test('the band shows what is used of context, 7d and 5h', async ($, on) => {
     expect(all).toMatch(/3d 4h/)
     expect(all).toMatch(/18%/)
     expect(all).toMatch(/2h 10m/)
+    expect(all).toMatch(/3d 4h.*swift-otter/)
     await ui.unmount()
   }
 })

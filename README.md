@@ -3,12 +3,13 @@
 A Claude Code mod that shows a one-line usage band above the prompt:
 
 ```
-USAGE   CTX ●······· 12%   5H ●●······ 25% · 2h 10m   7D ●●●····· 32% · 3d 4h
+USAGE   CTX ●······· 12%   5H ●●······ 25% · 2h 10m   7D ●●●····· 32% · 3d 4h   my-worktree
 ```
 
 - **CTX** - how full the context window is
 - **5H** - the 5-hour rate limit used, and when it resets
 - **7D** - the weekly rate limit used, and when it resets
+- **worktree** - the git worktree name, when the session runs in one
 
 Meters turn green, amber (30%+) and orange (75%+) as they fill. The 5H and 7D meters appear only on a Claude subscription. The band reads these figures from Claude Code itself and sends nothing anywhere.
 

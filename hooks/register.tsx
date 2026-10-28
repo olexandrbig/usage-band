@@ -1,10 +1,11 @@
 import { atom, read, update } from 'claude-code'
-import type { Register, SessionContextUsage, SessionRateLimit } from 'claude-code'
+import type { EngineInterface, Register, SessionContextUsage, SessionRateLimit } from 'claude-code'
 
 import type { Meter, Snapshot } from '../types'
 
 const snapshot = atom({ plugin: 'usage-band', key: 'snapshot' } as const, null)
 const now = atom({ plugin: 'usage-band', key: 'now' } as const, 0)
+const worktree = atom({ plugin: 'usage-band', key: 'worktree' } as const, null)
 
 const DOTS = 8
 const LABEL = '#8a8a8a'
@@ -35,9 +36,22 @@ const countdown = (resetsAt: string | undefined, at: number) => {
   return days > 0 ? `${days}d ${hours}h` : `${hours}h ${minutes % 60}m`
 }
 
+// The worktree's folder name when the session runs in a linked git worktree, else null.
+const worktreeName = async ($: EngineInterface) => {
+  const [root, repo] = await Promise.all([$.session.root(), $.session.repo()])
+
+  if (!repo || root.replace(/\/+$/, '') === repo.root.replace(/\/+$/, '')) {
+    return null
+  }
+
+  return root.split('/').filter(Boolean).pop() ?? null
+}
+
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await update($, now, () => Date.now())
+    const name = await worktreeName($)
+    await update($, worktree, () => name)
     const usage = await $.session.usage()
     await update($, snapshot, () => toSnapshot(usage.context, usage.rateLimits))
     $.clock.every(60_000, () => update($, now, () => Date.now()))
@@ -48,6 +62,8 @@ export const register: Register = on => {
   on('session.measure', async ($, e, next) => {
     await update($, snapshot, () => toSnapshot(e.context, e.rateLimits))
     await update($, now, () => Date.now())
+    const name = await worktreeName($)
+    await update($, worktree, () => name)
 
     return next(e)
   })
@@ -61,6 +77,7 @@ export const register: Register = on => {
     }
 
     const at = (await read($, now)) || Date.now()
+    const tree = await read($, worktree)
     const { Box, Text } = $.ui.resolve(e)
 
     const meter = (name: string, used: number, suffix: string) => {
@@ -96,6 +113,11 @@ export const register: Register = on => {
       <Box flexDirection="row" flexWrap="nowrap" columnGap={2}>
         <Text weight="bold" size="footnote">USAGE</Text>
         {items}
+        {tree ? (
+          <Box marginLeft={1}>
+            <Text color={LABEL} size="footnote">{tree}</Text>
+          </Box>
+        ) : null}
       </Box>
     )
   })
