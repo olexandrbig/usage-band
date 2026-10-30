@@ -22,7 +22,7 @@ test('the band shows what is used of context, 7d and 5h', async ($, on) => {
   for (const surface of ['terminal', 'desktop'] as const) {
     const ui = await $.ui.mount({ ...BAND, surface })
     const all = (await ui.findAll({ type: 'Text' })).map(t => t.text).join(' | ')
-    expect(all).toMatch(/USAGE/)
+    expect(all).not.toMatch(/USAGE/)
     expect(all).toMatch(/40%/)
     expect(all).toMatch(/32%/)
     expect(all).toMatch(/3d 4h/)
@@ -102,7 +102,7 @@ test('the band counts running agents before CTX and a click opens the agents pan
 
   const ui = await $.ui.mount({ ...BAND, surface: 'desktop' })
   const all = (await ui.findAll({ type: 'Text' })).map(t => t.text).join(' | ')
-  expect(all).toMatch(/USAGE \| 2 \|.*CTX/)
+  expect(all).toMatch(/^2 \|.*CTX/)
   await ui.press({ key: 'agents' })
   expect(opened).toEqual(['usage-band-agents'])
   await ui.unmount()

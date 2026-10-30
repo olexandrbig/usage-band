@@ -3,7 +3,7 @@
 A Claude Code mod that shows a one-line usage band above the prompt:
 
 ```
-USAGE   🤖 2   CTX ●······· 12%   5H ●●······ 25% · 2h 10m   7D ●●●····· 32% · 3d 4h   my-worktree
+🤖 2   CTX ●······· 12%   5H ●●······ 25% · 2h 10m   7D ●●●····· 32% · 3d 4h   my-worktree
 ```
 
 - **agents** - how many subagents are running; click the count to open an Agents pane, then click an agent to see its transcript

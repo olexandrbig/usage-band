@@ -146,7 +146,6 @@ export const register: Register = on => {
     const meterText = (s: (typeof specs)[number], dots: number) =>
       `${s.name} ${dots ? '●'.repeat(dots) + ' ' : ''}${Math.round(s.used)}%${s.suffix ? ` · ${s.suffix}` : ''}`
     const fullWidth =
-      'USAGE'.length +
       specs.reduce((sum, s) => sum + 2 + meterText(s, DOTS).length, 0) +
       (where ? 5 + where.name.length : 0) +
       (running ? 5 + String(running).length : 0)
@@ -171,7 +170,6 @@ export const register: Register = on => {
 
     return (
       <Box flexDirection="row" flexWrap="nowrap" columnGap={2}>
-        <Text weight="bold" size="footnote">USAGE</Text>
         {running ? (
           <Box flexDirection="row" alignItems="center" columnGap={1}>
             {e.surface !== 'terminal' && 'Svg' in ui ? (
